@@ -1,9 +1,15 @@
 const BASE = `https://www.nvidia.com`;
 
 async function getDriver(beta) {
-	const params = new URLSearchParams("psid=101&pfid=845&rpf=1&osid=12&lid=1&lang=en-us&ctk=0&dtid=17&dtcid=0");
+	const isLinux = Deno.build.os === 'linux';
+	const params = new URLSearchParams("psid=101&pfid=845&rpf=1&lid=1&ctk=0&dtid=17");
 
-	if (beta) {
+	params.set("osid", isLinux ? 12 : 135);
+	params.set("dtcid", isLinux ? 0 : 1);
+
+	if (!isLinux && beta) {
+		params.set('dtid', 18);
+	} else if (beta || !isLinux) {
 		params.set('dtid', 1);
 	}
 
