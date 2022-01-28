@@ -1,6 +1,7 @@
 const BASE = `https://www.nvidia.com`;
 
-async function getDriver(beta) {
+
+async function get_driver(beta) {
 	const isLinux = Deno.build.os === 'linux';
 	const params = new URLSearchParams("psid=101&pfid=845&rpf=1&lid=1&ctk=0&dtid=17");
 
@@ -27,15 +28,33 @@ async function getDriver(beta) {
 		throw new Error("fail to parse")
 	}
 
-	const r_DL = await fetch(BASE + DL[1]);
-	const rDLBody = await r_DL.text();
+	return await get_link(BASE + DL[1]);
+}
 
-	const USDL = rDLBody.match(/href="(\/\/us\.down.+)"/);
+
+async function get_unstable() {
+	const R = await fetch("https://forums.developer.nvidia.com/t/current-graphics-driver-releases/28500");
+	const txt = await R.text();
+	
+
+	const result = txt.match(/Current beta release: <a href=".+" data-bbcode="true">.+<\/a> \(<a href="(.+)" data-bbcode="true">x86_64/);
+	if (result) {
+		return result[1]
+	}
+}
+
+async function get_link(url) {
+	const R = await fetch(url);
+	const txt = await R.text();
+
+	const USDL = txt.match(/href="(\/\/us\.down.+)"/);
 	if (USDL) {
 		return USDL[1];
 	}
 }
 
-const [stable,beta] = await Promise.all([getDriver(), getDriver(true)]);
+
+const [stable,beta,unstable] = await Promise.all([get_driver(), get_driver(true), get_unstable()]);
 console.log(stable);
 console.log(beta);
+console.log(unstable);
